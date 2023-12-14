@@ -67,7 +67,7 @@ const drawSun = (svg, svgHeight, svgWidth) => {
 
     let rayg = svg.append("g")
         // .attr('y', '30%')
-        .attr('transform',`translate(${svgWidth*0.15}, 0) scale(${svgWidth*0.001})`);
+        .attr('transform',`translate(${svgWidth*0.15}, -100) scale(1)`);
 
 
     rayg.append("circle")
@@ -134,16 +134,16 @@ addEventListener("resize", (event) => {
 
 function draw(type, r) {
     const svgWidth = window.innerWidth;
-    const svgHeight = window.innerWidth * 0.5;
+    const svgHeight = window.innerHeight
     var div = d3.select( '#waves' ),
         width = svgWidth,
         height = svgHeight
     x = d3.scaleLinear().range([0, width]);
     y = d3.scaleLinear().range([height, 0]);
 
-    data = [0.7, 0.6, 0.4, 0.2, 0.1].map(function (d, i) {
+    data = [0.8, 0.7, 0.6, 0.4, 0.2, 0.1, 0.05].map(function (d, i) {
             var w = wave()
-                .radius((0.02*(i+1)*height)*Math.random()+i)
+                .radius((0.02*(i+1)*width/1.5)*Math.random()+i)
                 .waveLength(0.09*(Math.random()+1)*(i+1))
                 .y(d);
             w.area.x(function (dd) {
@@ -170,7 +170,7 @@ function draw(type, r) {
         .append('circle')
         .attr('cx', '50%')
         .attr('cy', '50%')
-        .attr("r", width)
+        .attr("r", Math.max(width, height))
         .style('fill', 'url(#sun)')
 
     drawSun(paper, svgHeight, svgWidth);

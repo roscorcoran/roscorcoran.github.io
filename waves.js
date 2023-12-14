@@ -67,14 +67,14 @@ const drawSun = (svg, svgHeight, svgWidth) => {
 
     let rayg = svg.append("g")
         // .attr('y', '30%')
-        .attr('transform',`translate(${svgWidth*0.15}, -100) scale(1)`);
+        .attr('transform',`translate(${svgWidth*0.15}, -${(svgHeight/2)-(svgHeight/6)}) scale(1)`);
 
 
     rayg.append("circle")
         .attr('cx', '50%')
         .attr('cy', '50%')
         // .attr('transform',`translate(${svgWidth*0.35}, -${svgHeight*0.3})`)
-        .attr('transform',`translate(0,-100)`)
+        .attr('transform',`translate(0,0)`)
         // .attr("cx", svgWidth / 2)
         // .attr("cy", svgHeight / 2 -100)
         .attr("r", sunRadius)
@@ -109,17 +109,13 @@ const drawSun = (svg, svgHeight, svgWidth) => {
         const angle = (i / numRays) * 2 * Math.PI;
 
         const x = svgWidth / 2 + sunRadius * Math.cos(angle);
-        const y = svgHeight / 2 + sunRadius * Math.sin(angle) - 100;
+        const y = svgHeight / 2 + sunRadius * Math.sin(angle);
 
         const rotation = (i / numRays) * 360 + 90; // Adjust the rotation of the rays
 
         rayg.append("polygon")
-            // .attr('fy', '30%')
-            // .attr("class", "ray")
             .attr("points", getTaperedRectanglePoints(x, y, rayBaseWidth, rayTopWidth, rayLength, rotation))
-            .attr("fill", "url(#textureGradient)")
-        ;
-            // .attr("fill", "url(#texturedPattern)");
+            .attr("fill", "url(#textureGradient)");
     }
 }
 var color = d3.scaleSequential(d3.interpolateBlues),
@@ -168,8 +164,8 @@ function draw(type, r) {
 
     behindSun(paper)
         .append('circle')
-        .attr('cx', '50%')
-        .attr('cy', '50%')
+        .attr('cx', '0')
+        .attr('cy', '0')
         .attr("r", Math.max(width, height))
         .style('fill', 'url(#sun)')
 

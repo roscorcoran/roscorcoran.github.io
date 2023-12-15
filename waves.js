@@ -66,8 +66,13 @@ const drawSun = (svg, svgHeight, svgWidth) => {
   const rayTopWidth = 4; // Top width of the rays
   const rayLength = 1900; // Length of the rays
 
-  let rayg = svg.append("g").classed("sunrays", true);
-  // .attr('y', '30%');
+  let rayg = svg
+    .append("g")
+    .classed("sunrays", true)
+    .attr(
+      "transform",
+      `translate(${svgWidth * 0.15}, -${svgHeight / 2 - 150})`,
+    );
 
   rayg
     .append("circle")
@@ -141,8 +146,6 @@ const drawSun = (svg, svgHeight, svgWidth) => {
 const animateSun = (mouseX) => {
   d3.select(".sunrays")
     .attr("transform-box", "fill-box")
-    // `translate(${svgWidth * 0.15}, -${svgHeight / 2 - 150}) scale(1)`,
-
     .attr(
       "transform",
       `translate(${svgWidth * 0.15}, -${
@@ -370,7 +373,6 @@ function moveBoat() {
 }
 
 draw();
-animateSun(0);
 let initTimer = d3.timer(animate);
 
 const debounce = (fn, delay) => {
@@ -396,4 +398,8 @@ document.addEventListener(
 
 document.addEventListener("mousemove", (event) => {
   animateSun(event.clientX / 2);
+});
+
+document.addEventListener("click", (event) => {
+  draw();
 });

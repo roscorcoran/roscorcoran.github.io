@@ -399,7 +399,11 @@ document.addEventListener(
 document.addEventListener("mousemove", (event) => {
   animateSun(event.clientX / 2);
 });
+document.addEventListener('touchmove', function(event) {
+  animateSun(event.touches[0].clientX);
+});
 
 document.addEventListener("click", (event) => {
   draw();
 });
+

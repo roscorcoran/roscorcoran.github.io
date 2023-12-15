@@ -143,106 +143,6 @@ const drawSun = (svg, svgHeight, svgWidth) => {
       .attr("fill", "url(#textureGradient)");
   }
 };
-var color = d3.scaleSequential(d3.interpolateBlues),
-  waves,
-  x,
-  y,
-  r,
-  data,
-  boat;
-var initTimer = d3.timer(animate);
-draw();
-addEventListener("resize", (event) => {
-  initTimer.stop();
-  initTimer = d3.timer(animate);
-  draw();
-});
-
-function draw(type, r) {
-  const svgWidth = window.innerWidth;
-  const svgHeight = window.innerHeight;
-  var div = d3.select("#waves"),
-    width = svgWidth,
-    height = svgHeight;
-  x = d3.scaleLinear().range([0, width]);
-  y = d3.scaleLinear().range([height, 0]);
-
-  data = [0.8, 0.7, 0.6, 0.4, 0.2, 0.1, 0.05].map(function (d, i) {
-    var w = wave()
-      .radius(((0.02 * (i + 1) * width) / 1.5) * Math.random() + i)
-      .waveLength(0.09 * (Math.random() + 1) * (i + 1))
-      .y(d);
-    w.area
-      .x(function (dd) {
-        return x(dd.x) + dd.dx;
-      })
-      .y1(function (dd) {
-        return y(dd.y) - dd.dy;
-      })
-      .y0(function () {
-        return y(0);
-      });
-    return w;
-  });
-
-  div.select(".paper").remove();
-
-  var paper = div
-    .append("svg")
-    .classed("paper", true)
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", "0 0 " + width + " " + height)
-    .style("stroke-width", 0.5);
-
-  behindSun(paper)
-    .append("circle")
-    .attr("cx", "0")
-    .attr("cy", "0")
-    .attr("r", Math.max(width, height))
-    .style("fill", "url(#sun)");
-
-  drawSun(paper, svgHeight, svgWidth);
-
-  waves = paper
-    .append("g")
-    .classed("waves", true)
-    .selectAll("path")
-    .data(data)
-    .enter()
-    .append("path")
-    .style("stroke", "none")
-    .each(function (d) {
-      d3.select(this).attr("d", d.context(null)).style("fill", color(d.y()));
-      // d3.select(this).attr('d', d.context(null));
-    });
-
-  boat = paper
-    .append("text")
-    .text("⛵")
-    .style("text-anchor", "middle")
-    .style("alignment-baseline", "middle")
-    .style("font-size", "60px");
-  moveBoat();
-  // var dataURL = svg.node().toDataURL();
-  // const bgElement = d3.selectAll( '.bg' )
-  // bgElement.style( 'background-image', 'url(' + dataURL + ')' );
-}
-
-function animate() {
-  waves.each(function (d) {
-    d3.select(this).attr("d", d.tick());
-  });
-  moveBoat();
-}
-
-function moveBoat() {
-  var d = data[1].point(20);
-  boat.attr(
-    "transform",
-    "translate(" + (x(d.x) + d.dx) + ", " + (y(d.y) - d.dy) + ")",
-  );
-}
 
 function behindSun(paper) {
   paper
@@ -363,3 +263,116 @@ function wave() {
 
   return wave;
 }
+
+function draw() {
+  var color = d3.scaleSequential(d3.interpolateBlues);
+  const svgWidth = window.innerWidth;
+  const svgHeight = window.innerHeight;
+  var div = d3.select("#waves"),
+    width = svgWidth,
+    height = svgHeight;
+  x = d3.scaleLinear().range([0, width]);
+  y = d3.scaleLinear().range([height, 0]);
+
+  const waveSpace = 100;
+  const numWaves = Math.ceil(height / waveSpace)<=6?6:Math.ceil(height / waveSpace);
+
+  const waveConfig = Array.from(
+    { length: numWaves },
+    (_, i) => (1 / numWaves) * i,
+  );
+
+  data = waveConfig.reverse().map(function (d, i) {
+    var w = wave()
+      .radius(((0.02 * (i + 1) * width) / 1.5) * Math.random() + i)
+      .waveLength(0.09 * (Math.random() + 1) * (i + 1))
+      .y(d);
+    w.area
+      .x(function (dd) {
+        return x(dd.x) + dd.dx;
+      })
+      .y1(function (dd) {
+        return y(dd.y) - dd.dy;
+      })
+      .y0(function () {
+        return y(0);
+      });
+    return w;
+  });
+
+  div.select(".paper").remove();
+
+  var paper = div
+    .append("svg")
+    .classed("paper", true)
+    .attr("viewBox", "0 0 " + width + " " + height)
+    .style("stroke-width", 0.5);
+
+  behindSun(paper)
+    .append("circle")
+    .attr("cx", "0")
+    .attr("cy", "0")
+    .attr("r", Math.max(width, height))
+    .style("fill", "url(#sun)");
+
+  drawSun(paper, svgHeight, svgWidth);
+
+  waves = paper
+    .append("g")
+    .classed("waves", true)
+    .selectAll("path")
+    .data(data)
+    .enter()
+    .append("path")
+    .style("stroke", "none")
+    .each(function (d) {
+      d3.select(this).attr("d", d.context(null)).style("fill", color(d.y()));
+    });
+
+  boat = paper
+    .append("text")
+    .text("⛵")
+    .style("text-anchor", "middle")
+    .style("alignment-baseline", "middle")
+    .style("font-size", "60px");
+  moveBoat(data, boat, x, y);
+}
+
+let data, boat, x, y, waves;
+
+function animate() {
+  waves.each(function (d) {
+    d3.select(this).attr("d", d.tick());
+  });
+  moveBoat();
+}
+
+function moveBoat() {
+  const midpoint = Math.floor(data[2].points().length / 2.5);
+  var d = data[2].point(midpoint);
+  boat.attr(
+    "transform",
+    "translate(" + (x(d.x) + d.dx) + ", " + (y(d.y) - d.dy) + ")",
+  );
+}
+
+draw();
+let initTimer = d3.timer(animate);
+
+const  debounce = (fn, delay) => {
+  let timeoutId;
+
+  return function(...args) {
+    clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(() => {
+      fn(...args);
+    }, delay);
+  };
+}
+
+addEventListener("resize", debounce((event) => {
+  draw();
+  initTimer?.stop();
+  initTimer = d3.timer(animate);
+}, 100));

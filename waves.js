@@ -71,9 +71,7 @@ const drawSun = (svg, svgHeight, svgWidth) => {
     // .attr('y', '30%')
     .attr(
       "transform",
-      `translate(${svgWidth * 0.15}, -${
-        svgHeight / 2 - svgHeight / 6
-      }) scale(1)`,
+      `translate(${svgWidth * 0.15}, -${svgHeight / 2 - 150}) scale(1)`,
     );
 
   rayg
@@ -275,7 +273,8 @@ function draw() {
   y = d3.scaleLinear().range([height, 0]);
 
   const waveSpace = 100;
-  const numWaves = Math.ceil(height / waveSpace)<=6?6:Math.ceil(height / waveSpace);
+  const numWaves =
+    Math.ceil(height / waveSpace) <= 6 ? 6 : Math.ceil(height / waveSpace);
 
   const waveConfig = Array.from(
     { length: numWaves },
@@ -359,20 +358,23 @@ function moveBoat() {
 draw();
 let initTimer = d3.timer(animate);
 
-const  debounce = (fn, delay) => {
+const debounce = (fn, delay) => {
   let timeoutId;
 
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timeoutId);
 
     timeoutId = setTimeout(() => {
       fn(...args);
     }, delay);
   };
-}
+};
 
-addEventListener("resize", debounce((event) => {
-  draw();
-  initTimer?.stop();
-  initTimer = d3.timer(animate);
-}, 100));
+addEventListener(
+  "resize",
+  debounce((event) => {
+    draw();
+    initTimer?.stop();
+    initTimer = d3.timer(animate);
+  }, 100),
+);

@@ -66,13 +66,8 @@ const drawSun = (svg, svgHeight, svgWidth) => {
   const rayTopWidth = 4; // Top width of the rays
   const rayLength = 1900; // Length of the rays
 
-  let rayg = svg
-    .append("g")
-    // .attr('y', '30%')
-    .attr(
-      "transform",
-      `translate(${svgWidth * 0.15}, -${svgHeight / 2 - 150}) scale(1)`,
-    );
+  let rayg = svg.append("g").classed("sunrays", true);
+  // .attr('y', '30%');
 
   rayg
     .append("circle")
@@ -94,6 +89,7 @@ const drawSun = (svg, svgHeight, svgWidth) => {
     height,
     rotation,
   ) {
+    rotation = rotation + mouseX;
     const multiplier = 2; //1+ Math.random()*1.5;
     const halfBase = (baseWidth / 2) * multiplier;
     const halfTop = (topWidth / 2) * multiplier;
@@ -140,6 +136,19 @@ const drawSun = (svg, svgHeight, svgWidth) => {
       )
       .attr("fill", "url(#textureGradient)");
   }
+};
+
+const animateSun = (mouseX) => {
+  d3.select(".sunrays")
+    .attr("transform-box", "fill-box")
+    // `translate(${svgWidth * 0.15}, -${svgHeight / 2 - 150}) scale(1)`,
+
+    .attr(
+      "transform",
+      `translate(${svgWidth * 0.15}, -${
+        svgHeight / 2 - 150
+      }) rotate(${mouseX} ${svgWidth / 2} ${svgHeight / 2})`,
+    );
 };
 
 function behindSun(paper) {
@@ -264,8 +273,6 @@ function wave() {
 
 function draw() {
   var color = d3.scaleSequential(d3.interpolateBlues);
-  const svgWidth = window.innerWidth;
-  const svgHeight = window.innerHeight;
   var div = d3.select("#waves"),
     width = svgWidth,
     height = svgHeight;
@@ -337,7 +344,14 @@ function draw() {
   moveBoat(data, boat, x, y);
 }
 
-let data, boat, x, y, waves;
+let data,
+  boat,
+  x,
+  y,
+  waves,
+  mouseX = 0,
+  svgWidth = window.innerWidth,
+  svgHeight = window.innerHeight;
 
 function animate() {
   waves.each(function (d) {
@@ -356,6 +370,7 @@ function moveBoat() {
 }
 
 draw();
+animateSun(0);
 let initTimer = d3.timer(animate);
 
 const debounce = (fn, delay) => {
@@ -370,7 +385,7 @@ const debounce = (fn, delay) => {
   };
 };
 
-addEventListener(
+document.addEventListener(
   "resize",
   debounce((event) => {
     draw();
@@ -378,3 +393,7 @@ addEventListener(
     initTimer = d3.timer(animate);
   }, 100),
 );
+
+document.addEventListener("mousemove", (event) => {
+  animateSun(event.clientX / 2);
+});

@@ -64,7 +64,7 @@ const drawSun = (svg, svgHeight, svgWidth) => {
   const numRays = 44;
   const rayBaseWidth = 40; // Base width of the rays
   const rayTopWidth = 4; // Top width of the rays
-  const rayLength = 1900; // Length of the rays
+  const rayLength = Math.max(1900, svgWidth * 1.2); // Length of the rays
 
   let rayg = svg
     .append("g")
@@ -338,12 +338,15 @@ function draw() {
       d3.select(this).attr("d", d.context(null)).style("fill", color(d.y()));
     });
 
+  const boatSize = 100;
+
   boat = paper
-    .append("text")
-    .text("⛵")
-    .style("text-anchor", "middle")
-    .style("alignment-baseline", "middle")
-    .style("font-size", "60px");
+    .append("svg:image")
+    .attr("x", -(boatSize / 2))
+    .attr("y", -boatSize + 20)
+    .attr("width", boatSize)
+    .attr("height", boatSize)
+    .attr("xlink:href", "cat.png");
   moveBoat(data, boat, x, y);
 }
 
@@ -364,11 +367,14 @@ function animate() {
 }
 
 function moveBoat() {
-  const midpoint = Math.floor(data[2].points().length / 2.5);
+  const midpoint = Math.floor(data[2].points().length / 1.8);
   var d = data[2].point(midpoint);
+  const rockAndRoll = d3.scaleLinear([-10, 10], [0, 15]);
   boat.attr(
     "transform",
-    "translate(" + (x(d.x) + d.dx) + ", " + (y(d.y) - d.dy) + ")",
+    `translate(${x(d.x) + d.dx}, ${y(d.y) - d.dy}) rotate(${rockAndRoll(
+      d.dy,
+    )})`,
   );
 }
 
@@ -387,9 +393,12 @@ const debounce = (fn, delay) => {
   };
 };
 
-document.addEventListener(
+addEventListener(
   "resize",
-  debounce((event) => {
+  debounce(() => {
+    //TODO: This is bad and I should feel bad
+    svgWidth = window.innerWidth;
+    svgHeight = window.innerHeight;
     draw();
     initTimer?.stop();
     initTimer = d3.timer(animate);
@@ -399,11 +408,10 @@ document.addEventListener(
 document.addEventListener("mousemove", (event) => {
   animateSun(event.clientX / 2);
 });
-document.addEventListener('touchmove', function(event) {
+document.addEventListener("touchmove", function (event) {
   animateSun(event.touches[0].clientX);
 });
 
 document.addEventListener("click", (event) => {
   draw();
 });
-

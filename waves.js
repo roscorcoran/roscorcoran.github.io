@@ -183,13 +183,13 @@ function wave() {
   var radius = 0.1, // intensity of wave
     waveLength = 1, // wave length
     y = 0,
-    area = d3.area().curve(d3.curveNatural),
+    area = d3.area().curve(d3.curveBasis),
     extent = [0, 1],
     pi = Math.PI,
     cos = Math.cos,
     sin = Math.sin,
-    N = 8,
-    speed = 0.025 * (Math.random() + 0.2),
+    N = d3.scaleLinear([2.1, 3.5])(Math.random()),
+    speed = 0.01,
     time = 0;
 
   function wave(d) {
@@ -265,7 +265,7 @@ function wave() {
       x: x0 + i * dx,
       y: y,
       angle: a,
-      radius: radius * (Math.random() / 2),
+      radius: radius,
       dx: radius * cos(a),
       dy: radius * sin(a),
     };
@@ -282,7 +282,7 @@ function draw() {
   x = d3.scaleLinear().range([0, width]);
   y = d3.scaleLinear().range([height, 0]);
 
-  const waveSpace = 100;
+  const waveSpace = 80;
   const numWaves =
     Math.ceil(height / waveSpace) <= 6 ? 6 : Math.ceil(height / waveSpace);
 
@@ -291,11 +291,27 @@ function draw() {
     (_, i) => (1 / numWaves) * i,
   );
 
+  const seaLevel = Math.random();
+
   data = waveConfig.reverse().map(function (d, i) {
+    let seaLevelWeight = 0.25;
+    let waveModifier =
+      seaLevel * seaLevelWeight + Math.random() * (1 - seaLevelWeight);
+    let speedModifier =
+      seaLevel * seaLevelWeight + Math.random() * (1 - seaLevelWeight);
+
+    let rad = d3.scaleLinear([5, 75]);
+    let wl = d3.scaleLinear([0.05, 0.7]);
+    let speed = d3.scaleLinear([0.01, 0.035]);
+
     var w = wave()
-      .radius(((0.02 * (i + 1) * width) / 1.5) * Math.random() + i)
-      .waveLength(0.09 * (Math.random() + 1) * (i + 1))
+      .radius(rad(waveModifier))
+      .waveLength(wl(waveModifier) * (400/width))
+      .speed(speed(speedModifier * (i / numWaves)))
       .y(d);
+    if(i === waveConfig.length - 1) {
+      console.log(w.radius(), w.waveLength());
+    }
     w.area
       .x(function (dd) {
         return x(dd.x) + dd.dx;
@@ -334,14 +350,19 @@ function draw() {
     .enter()
     .append("path")
     .style("stroke", "none")
-    .each(function (d) {
+    .each(function (d, i) {
       d3.select(this).attr("d", d.context(null)).style("fill", color(d.y()));
+      if (i === 3) {
+        d3.select(this).attr("class", "boat-wave");
+      }
     });
 
   const boatSize = 100;
 
-  boat = paper
-    .append("svg:image")
+  boat = d3
+    .select(".waves")
+    .insert("svg:image", ".boat-wave")
+    .attr("class", "boat")
     .attr("x", -(boatSize / 2))
     .attr("y", -boatSize + 20)
     .attr("width", boatSize)
@@ -367,14 +388,18 @@ function animate() {
 }
 
 function moveBoat() {
-  const midpoint = Math.floor(data[2].points().length / 1.8);
+  const midpoint = Math.floor(data[2].points().length / 2.2);
   var d = data[2].point(midpoint);
-  const rockAndRoll = d3.scaleLinear([-10, 10], [0, 15]);
+  const rockAndRoll = d3
+    .scalePow()
+    .exponent(0.9)
+    .domain([-10, 10])
+    .range([-2, 8]);
   boat.attr(
     "transform",
-    `translate(${x(d.x) + d.dx}, ${y(d.y) - d.dy}) rotate(${rockAndRoll(
-      d.dy,
-    )})`,
+    `translate(${x(d.x) + d.dx * 0.3 - 1}, ${
+      y(d.y) - d.dy * 0.5 + 2
+    }) rotate(${rockAndRoll(d.dy)}, 0, 40)`,
   );
 }
 

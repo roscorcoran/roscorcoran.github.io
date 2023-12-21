@@ -1,3 +1,5 @@
+getSvgWidth = () => window.innerWidth<500?500:(window.innerWidth>1000?1000:window.innerWidth)
+
 const drawSun = (svg, svgHeight, svgWidth) => {
   const gradient = svg
     .append("defs")
@@ -190,7 +192,7 @@ function wave() {
     sin = Math.sin,
     N = d3.scaleLinear([2.1, 3.5])(Math.random()),
     speed = 0.01,
-    time = 0;
+    time = Math.round(d3.scaleLinear([10, 100])(Math.random()));
 
   function wave(d) {
     return area(wave.points(d));
@@ -279,8 +281,8 @@ function draw() {
   var div = d3.select("#waves"),
     width = svgWidth,
     height = svgHeight;
-  x = d3.scaleLinear().range([0, width]);
-  y = d3.scaleLinear().range([height, 0]);
+  x = d3.scaleLinear([0, Math.max(svgWidth, 800)]);
+  y = d3.scaleLinear([height, 0]);
 
   const waveSpace = 80;
   const numWaves =
@@ -294,24 +296,21 @@ function draw() {
   const seaLevel = Math.random();
 
   data = waveConfig.reverse().map(function (d, i) {
-    let seaLevelWeight = 0.25;
+    let seaLevelWeight = 0.3;
     let waveModifier =
       seaLevel * seaLevelWeight + Math.random() * (1 - seaLevelWeight);
     let speedModifier =
       seaLevel * seaLevelWeight + Math.random() * (1 - seaLevelWeight);
 
-    let rad = d3.scaleLinear([5, 75]);
-    let wl = d3.scaleLinear([0.05, 0.7]);
+    let rad = d3.scaleLinear([-30, 170]);
+    let wl = d3.scaleLinear([0.03, 0.7]);
     let speed = d3.scaleLinear([0.01, 0.035]);
 
     var w = wave()
       .radius(rad(waveModifier))
-      .waveLength(wl(waveModifier) * (400/width))
+      .waveLength(wl(waveModifier))
       .speed(speed(speedModifier * (i / numWaves)))
       .y(d);
-    if(i === waveConfig.length - 1) {
-      console.log(w.radius(), w.waveLength());
-    }
     w.area
       .x(function (dd) {
         return x(dd.x) + dd.dx;
@@ -331,7 +330,7 @@ function draw() {
     .append("svg")
     .classed("paper", true)
     .attr("viewBox", "0 0 " + width + " " + height)
-    .style("stroke-width", 0.5);
+      .style("stroke-width", 0.5);
 
   behindSun(paper)
     .append("circle")
@@ -377,7 +376,7 @@ let data,
   y,
   waves,
   mouseX = 0,
-  svgWidth = window.innerWidth,
+  svgWidth = getSvgWidth(),
   svgHeight = window.innerHeight;
 
 function animate() {
@@ -388,7 +387,7 @@ function animate() {
 }
 
 function moveBoat() {
-  const midpoint = Math.floor(data[2].points().length / 2.2);
+  const midpoint = Math.floor(data[2].points().length / 3);
   var d = data[2].point(midpoint);
   const rockAndRoll = d3
     .scalePow()
@@ -422,7 +421,7 @@ addEventListener(
   "resize",
   debounce(() => {
     //TODO: This is bad and I should feel bad
-    svgWidth = window.innerWidth;
+    svgWidth = getSvgWidth();
     svgHeight = window.innerHeight;
     draw();
     initTimer?.stop();
